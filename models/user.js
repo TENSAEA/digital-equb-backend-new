@@ -50,9 +50,9 @@ const UserSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
-  verificationStatus: {
+  status: {
     type: String,
-    default: "not active",
+    default: "unverified",
   },
   isBlocked: {
     type: String,
