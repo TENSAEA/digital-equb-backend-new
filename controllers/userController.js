@@ -134,6 +134,7 @@ const login = async (req, res) => {
         phone: user.phone,
         address: user.address,
         role: user.role,
+        status: user.status,
       },
       token,
     });
