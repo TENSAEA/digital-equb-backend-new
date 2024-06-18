@@ -1,16 +1,16 @@
-const Equb = require('../models/equb');
-const EqubDraw = require('../models/equbDraw');
-const User = require('../models/user');
+const Equb = require("../models/equb");
+const EqubDraw = require("../models/equbDraw");
+const User = require("../models/user");
 
 // Function to get eligible members for a specific equb and current round
 const getEligibleMembers = async (req, res) => {
   try {
     const { equbId } = req.params;
 
-    const equb = await Equb.findById(equbId).populate('members'); // Retrieve the Equb with its members
+    const equb = await Equb.findById(equbId).populate("members"); // Retrieve the Equb with its members
 
     if (!equb) {
-      return res.status(404).json({ message: 'Equb not found' });
+      return res.status(404).json({ message: "Equb not found" });
     }
 
     // Retrieve all draws for this equb
@@ -24,7 +24,7 @@ const getEligibleMembers = async (req, res) => {
 
     // Send the response with only the required information
     res.status(200).json({
-      message: 'Eligible members retrieved',
+      message: "Eligible members retrieved",
       eligibleMembers: eligibleMembers.map((member) => ({
         _id: member._id,
         fname: member.fname,
@@ -32,11 +32,10 @@ const getEligibleMembers = async (req, res) => {
       })), // Return only the first and last names of the eligible members
     });
   } catch (error) {
-    console.error('Error fetching eligible members:', error);
-    res.status(500).json({ message: 'Server error' });
+    console.error("Error fetching eligible members:", error);
+    res.status(500).json({ message: "Server error" });
   }
 };
-
 
 const storeEqubDraw = async (req, res) => {
   try {
@@ -44,14 +43,14 @@ const storeEqubDraw = async (req, res) => {
 
     if (!equbId || !winnerId) {
       console.log("missing required fields");
-      return res.status(400).json({ message: 'Missing required parameters' });
+      return res.status(400).json({ message: "Missing required parameters" });
     }
 
     // Find the specific equb to ensure it exists
     const equb = await Equb.findById(equbId);
 
     if (!equb) {
-      return res.status(404).json({ message: 'Equb not found' });
+      return res.status(404).json({ message: "Equb not found" });
     }
 
     // Create a new draw and determine the round number
@@ -62,13 +61,36 @@ const storeEqubDraw = async (req, res) => {
 
     await newDraw.save(); // Save the new draw
 
-    res.status(201).json({ message: 'Equb draw stored successfully', draw: newDraw });
+    res
+      .status(201)
+      .json({ message: "Equb draw stored successfully", draw: newDraw });
   } catch (error) {
-    console.error('Error storing equb draw:', error);
-    res.status(500).json({ message: 'Server error' });
+    console.error("Error storing equb draw:", error);
+    res.status(500).json({ message: "Server error" });
   }
 };
+
+// Controller function to get the latest draw result
+const getLatestDrawResult = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const latestDrawResult = await EqubDraw.findOne({ equb: id })
+      .sort({ date: -1 })
+      .populate("equb");
+    if (!latestDrawResult) {
+      return res.status(404).send("Draw result not found");
+    }
+
+    res.status(200).json(latestDrawResult);
+  } catch (error) {
+    console.error("Error fetching latest draw result:", error);
+    res.status(500).send("Server error");
+  }
+};
+
 module.exports = {
   getEligibleMembers,
   storeEqubDraw,
+  getLatestDrawResult,
 };
